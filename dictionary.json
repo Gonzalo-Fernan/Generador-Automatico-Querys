@@ -46,7 +46,16 @@
     "joins": [
       { "tabla": "pc_policyperiod", "on": "pc_policyperiod.ID = pc_policylocation.BranchID" }
     ]
+  },
+  {
+    "alias": "Status",
+    "campo": "Status",
+    "tabla": "pc_policyperiod",
+    "joins": [
+      { "tabla": "pc_policyperiod", "on": "pc_policyperiod.ID = pc_policylocation.BranchID" }
+    ]
   }
+
 
 ]
 
