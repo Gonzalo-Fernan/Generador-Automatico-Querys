@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Generador de Query SQL por Alias</title>
+  <style>
+    body {
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-top: 30px;
+    }
+
+    textarea, pre {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #bbb;
+      font-size: 14px;
+    }
+
+    textarea {
+      height: 120px;
+      resize: vertical;
+    }
+
+    pre {
+      background: #222;
+      color: #0f0;
+      height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 15px;
+      font-size: 15px;
+      margin-right: 10px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .container {
+      max-width: 920px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #0002;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+    <img src="image.png" alt="" style="width: 250px; display: block; margin-bottom: 20px;" />
+
+  <h1>Generador Automático de Query SQL Server</h1>
+  <p>Pegá los alias y se generará la sentencia SQL automáticamente.</p>
+
+  <h2>1. Ingresar los Alias (uno por línea)</h2>
+  <textarea id="aliasesInput" placeholder="Ejemplo:
+Nombre del Asegurado
+Número de Póliza
+Nombre del Cliente"></textarea>
+
+  <h2>2. Cargar diccionario desde archivo (.json)</h2>
+  <input type="file" id="fileInput" accept=".json" />
+
+ <!--  <p style="color:#555; font-size:14px;">
+    Si no cargás archivo, se usará el diccionario del textarea de abajo.
+  </p>
+ -->
+<!--   <h2>3. Diccionario embebido (opcional, solo si no cargaste archivo)</h2>
+  <textarea id="dictionaryInput">
+[
+  {
+    "alias": "Nombre del Asegurado",
+    "campo": "insuredName",
+    "tabla": "policyPeriod",
+    "joins": [
+      { "tabla": "policy", "on": "policyPeriod.policyId = policy.id" }
+    ]
+  },
+  {
+    "alias": "Número de Póliza",
+    "campo": "policyNumber",
+    "tabla": "policy",
+    "joins": [
+      { "tabla": "account", "on": "policy.accountId = account.id" }
+    ]
+  },
+  {
+    "alias": "Nombre del Cliente",
+    "campo": "clientName",
+    "tabla": "account",
+    "joins": []
+  }
+]
+  </textarea> -->
+
+  <button onclick="generateQuery()">Generar Query</button>
+  <button onclick="copyToClipboard()">Copiar Query</button>
+
+  <h2>Resultado:</h2>
+  <pre id="output"></pre>
+
+</div>
+
+<script>
+let loadedDictionary = null; // tendrá prioridad si se carga archivo
+
+// ------ 1. Cargar archivo JSON ------
+document.getElementById("fileInput").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    try {
+      loadedDictionary = JSON.parse(event.target.result);
+      alert("Diccionario cargado correctamente desde archivo.");
+    } catch (err) {
+      alert("Error al leer el archivo JSON.");
+    }
+  };
+  reader.readAsText(file);
+});
+
+
+// ------ 2. Generar Query ------
+function generateQuery() {
+  const aliasesText = document.getElementById("aliasesInput").value.trim();
+  const output = document.getElementById("output");
+
+  if (!aliasesText) {
+    return output.textContent = "⚠ Ingresá al menos un alias.";
+  }
+
+  let dictionary;
+
+  // prioridad al archivo cargado
+  if (loadedDictionary) {
+    dictionary = loadedDictionary;
+  } else {
+    try {
+      dictionary = JSON.parse(document.getElementById("dictionaryInput").value);
+    } catch (err) {
+      return output.textContent = "❌ Error en el formato del diccionario JSON.";
+    }
+  }
+
+  const aliases = aliasesText.split("\n").map(a => a.trim()).filter(a => a.length > 0);
+
+  const selectedColumns = [];
+  const tables = new Set();
+  const joins = new Map();
+
+  try {
+    for (const alias of aliases) {
+      const entry = dictionary.find(x => x.alias === alias);
+      if (!entry)
+        throw new Error(`Alias no encontrado en diccionario: ${alias}`);
+
+      selectedColumns.push(`${entry.tabla}.${entry.campo} AS [${entry.alias}]`);
+      tables.add(entry.tabla);
+
+      if (entry.joins) {
+        for (const j of entry.joins) {
+          const key = j.on;
+          joins.set(key, `JOIN ${j.tabla} ON ${j.on}`);
+        }
+      }
+    }
+  } catch (err) {
+    return output.textContent = "❌ " + err.message;
+  }
+
+  const fromTable = Array.from(tables)[0];
+
+  const sql =
+`SELECT
+  ${selectedColumns.join(",\n  ")}
+FROM ${fromTable}
+  ${Array.from(joins.values()).join("\n  ")};`;
+
+  output.textContent = sql;
+}
+
+
+// ------ 3. Copiar al portapapeles ------
+function copyToClipboard() {
+  const text = document.getElementById("output").textContent;
+  if (!text.trim()) {
+    return alert("No hay query para copiar.");
+  }
+
+  navigator.clipboard.writeText(text)
+    .then(() => alert("Query copiada al portapapeles."))
+    .catch(() => alert("Error al copiar."));
+}
+</script>
+
+</body>
+</html>
