@@ -5,44 +5,51 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SQL Query Builder</title>
 <style>
-    
-  body{font-family:Verdana, Geneva, Tahoma, sans-serif; margin:20px;background:#f6f8fa; width: 100%;}
-  .card{background:#fff;padding:18px;border-radius:10px;box-shadow:0 4px 18px rgba(20,30,50,0.06);margin-bottom:16px; max-width: 70%;}
+  *{margin: 0;box-sizing:border-box; padding: 0;}  
+  body{font-family:sans-serif, Verdana; background: linear-gradient(to right,#0b1220, #092d52); padding-inline-start: 100px; padding-top: 50px;}
+  .headConteiner{ display: flex; align-items: center; gap: 20px;}
+  .card{ display: flex; flex-direction: column; align-items: start; justify-content: center; gap: 10px; width: 95%; background: linear-gradient(to right,#ffffff,#898b96);padding:18px;border-radius:10px; box-shadow: #0c3f72 6px 12px 12px;;margin-bottom:16px;}
   textarea{width:80%;height:140px;padding:10px;font-family:monospace; display: block; margin-bottom: 20px;}
-  pre{background:#0b1220;color:#dff7c8;padding:12px;border-radius:8px;white-space:pre-wrap}
+  pre{background:#0b1220;color:#dff7c8;padding:12px;border-radius:8px;white-space:pre-wrap;}
   input[type=file]{display:block;margin:8px 0}
   button{padding:10px 12px;border-radius:8px;border:0;background:#0b74de;color:#fff;cursor:pointer}
   small{color:#666}
+  .articleConteiner{display:grid;grid-template-columns:1fr 1fr;}
 </style>
 </head>
 <body>
-<img src="image.png" alt="" style="width: 250px; height:auto; margin-bottom:20px;">
-<h1>SQL Query Builder</h1>
-<div class="card">
-  <strong>1) Load Files</strong>
-  <p><small>Select Ralationships json File</small><input type="file" id="relationsFile" accept="application/json"></p>  
-  <p><small>Select Aliases json File</small><input type="file" id="aliasFile" accept="application/json"></p>
-</div>
+  <div class="headConteiner">
+    <img src="image.png" alt="" style="width: 250px; height:auto; margin-bottom:20px; border-radius: 15px; box-shadow: #0c3f72 6px 6px 12px;">
+    <h1 style="color: rgb(207, 212, 235);">SQL Select Query Builder</h1>
+  </div>
+<section class="articleConteiner">
+  <article>
+    <div class="card">
+      <strong>1) Load Files</strong>
+      <p><small>Select Ralationships json File</small><input type="file" id="relationsFile" accept="application/json"></p>  
+      <p><small>Select Aliases json File</small><input type="file" id="aliasFile" accept="application/json"></p>
+    </div>
 
-<div class="card">
-  <strong>2) Paste alias to include (one per line, exactly as it appears on the ticket)</strong>
-  <textarea id="aliasList" placeholder="Example: Policy Number
-Postal Code
-INSURED_NAME"></textarea>
-  <button id="generate">Generate Query</button>
-  <button id="copyBtn" style="padding:10px 12px;border-radius:8px;border:0;background:#06818a;color:#fff;cursor:pointer">Copy Query</button>
-
-</div>
-
-<div class="card">
-  <strong>Result (query)</strong>
-  <pre id="output">The query will appear here...</pre>
-  <details>
-    <summary>Debug: tables detected / joins calculated</summary>
-    <pre id="debug"></pre>
-  </details>
-</div>
-
+      <div class="card">
+        <strong>2) Paste alias to include (one per line, exactly as it appears on the ticket)</strong>
+        <textarea style="width: 50%;" id="aliasList" placeholder="Example: Policy Number
+         Postal Code
+         INSURED_NAME"></textarea>
+        <button id="generate">Generate Query</button>
+        <button id="copyBtn" style="padding:10px 12px;border-radius:8px;border:0;background:#06818a;color:#fff;cursor:pointer">Copy Query</button>
+      </div>
+  </article>
+  <article>
+    <div class="card">
+      <strong> 3) Result (query)</strong>
+      <pre id="output">The query will appear here...</pre>
+      <details>
+        <summary>Debug: tables detected / joins calculated</summary>
+        <pre id="debug"></pre>
+      </details>
+    </div>
+  </article>
+</section>
 <script>
 let relationsRaw = null;
 let aliasArray = null;
@@ -158,7 +165,7 @@ function buildSelectField(table, field, alias){
 
 function generateQuery(){
   if(!relationsRaw || !aliasArray){
-    alert('Cargá ambos archivos: relaciones y alias');
+    alert('You must load both the relations and alias JSON files first.');
     return;
   }
 
@@ -240,18 +247,18 @@ function generateQuery(){
   const sql = `SELECT
     ${selectParts.join(',   \n    ')}
   FROM ${base}
-  ${joinSqlLines.map(j => '  ' + j).join('')}${errors.length ? '  -- ERRORES: \n    -- ' + errors.join('\n    -- ') : ''}`; `SELECT
-  ${selectParts.join(', \n ')}FROM ${base}${joinSqlLines.join('')}${errors.length? '-- ERRORES:-- '+errors.join('-- '): ''}`;
+  ${joinSqlLines.map(j => '  ' + j).join('')}${errors.length ? '  -- ERRORS: \n    -- ' + errors.join('\n    -- ') : ''}`; `SELECT
+  ${selectParts.join(', \n ')}FROM ${base}${joinSqlLines.join('')}${errors.length? '-- ERRORS:-- '+errors.join('-- '): ''}`;
 
   document.getElementById('output').textContent = sql;
 
   // debug info
   const dbg = [];
-  dbg.push('Tablas detectadas: '+tables.join(', '));
-  dbg.push('\nBase elegida: '+base);
-  dbg.push('\nJoins generados:');
+  dbg.push('Detected Tables: '+tables.join(', '));
+  dbg.push('\nBase Table: '+base);
+  dbg.push('\n\nGenerated Joins:');
   allJoins.forEach(j=> dbg.push(` \n JOIN ${j.joinTable} ON ${j.on}`));
-  if(errors.length) dbg.push('\n\nErrores encontrados:\n'+errors.join('\n'));
+  if(errors.length) dbg.push('\n\nErrors Found:\n'+errors.join('\n'));
   document.getElementById('debug').textContent = dbg.join('');
 }
 
