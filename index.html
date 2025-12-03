@@ -1,529 +1,281 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SQL Server SELECT Builder</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SQL Query Builder</title>
 <style>
-  :root{
-    --bg:#667692;
-    --card:#8b9cb9;
-    --shadow1:#1f2d49;
-    --shadow2:#485566;
-    --accent:#1d82d4;
-    --muted:#555;
-  }
-
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family: "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial;
-    background:var(--bg);
-    min-height:100vh;
-    display:flex;
-    align-items:flex-start;
-    justify-content:center;
-    padding:32px;
-  }
-
-  .card{
-    width:980px;
-    max-width:98vw;
-    background:var(--card);
-    border-radius:20px;
-    padding:28px;
-    box-shadow: 12px 12px 24px var(--shadow1), -12px -12px 24px var(--shadow2);
-  }
-
-  .header{
-    display:flex;
-    gap:18px;
-    align-items:center;
-    margin-bottom:18px;
-  }
-  img.logo{width:220px;height:auto;border-radius:8px;box-shadow:6px 6px 12px rgba(0,0,0,0.06);}
-
-  h1{margin:0;font-size:20px;color:#222}
-  p.lead{margin:6px 0 0;color:var(--muted);font-size:13px}
-
-  .grid{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap:16px;
-    margin-top:18px;
-  }
-
-  .panel{
-    background:var(--card);
-    background-color: #909496;
-    border-radius:12px;
-    padding:12px;
-    box-shadow: inset 6px 6px 6px rgba(126, 131, 136, 0.9), inset -6px -6px 6px rgba(112, 115, 119, 0.9);
-  }
-
-  label{display:block;font-weight:700;margin-bottom:6px;font-size:13px;color:rgb(0, 0, 0)}
-  input[type="file"], input[type="text"], textarea, select {
-    width:100%;
-    font-size:13px;
-    padding:10px 12px;
-    border-radius:10px;
-    border: none;
-    background:var(--card);
-    box-shadow: inset 6px 6px 12px rgba(68, 70, 77, 0.35), inset -6px -6px 12px rgba(134, 128, 128, 0.9);
-    outline: none;
-    color: white;
-  }
-
-  textarea{min-height:160px; resize:vertical}
-  .controls{display:flex;gap:10px;margin-top:12px}
-  button{
-    padding:10px 14px;
-    border-radius:10px;
-    border:none;
-    cursor:pointer;
-    font-weight:700;
-    box-shadow:4px 4px 8px var(--shadow1);
-    background:var(--card);
-  }
-  button.primary{background:var(--accent); color:white;}
-  button.ghost{background:transparent; box-shadow:none; border:1px solid rgba(0,0,0,0.06)}
-  .output{
-    margin-top:16px;
-    background:#cdd0d6;
-    padding:14px;
-    border-radius:10px;
-    min-height:120px;
-    white-space:pre-wrap;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
-    box-shadow: inset 6px 6px 12px rgba(197,201,208,0.35), inset -6px -6px 12px rgba(255, 255, 255, 0.9);
-  }
-
-  .small{font-size:12px;color:var(--muted)}
-  .footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:12px;flex-wrap:wrap}
-  .badge{background:#cfcdcd;padding:6px 8px;border-radius:8px;font-size:12px;box-shadow:3px 3px 8px rgba(0,0,0,0.04);}
-  .errors{color:#b00020;font-weight:700}
-  @media(max-width:880px){
-    .grid{grid-template-columns:1fr}
-    img.logo{width:160px}
-  }
+    
+  body{font-family:Verdana, Geneva, Tahoma, sans-serif; margin:20px;background:#f6f8fa; width: 100%;}
+  .card{background:#fff;padding:18px;border-radius:10px;box-shadow:0 4px 18px rgba(20,30,50,0.06);margin-bottom:16px; max-width: 70%;}
+  textarea{width:80%;height:140px;padding:10px;font-family:monospace; display: block; margin-bottom: 20px;}
+  pre{background:#0b1220;color:#dff7c8;padding:12px;border-radius:8px;white-space:pre-wrap}
+  input[type=file]{display:block;margin:8px 0}
+  button{padding:10px 12px;border-radius:8px;border:0;background:#0b74de;color:#fff;cursor:pointer}
+  small{color:#666}
 </style>
 </head>
 <body>
+<img src="image.png" alt="" style="width: 250px; height:auto; margin-bottom:20px;">
+<h1>SQL Query Builder</h1>
+<div class="card">
+  <strong>1) Load Files</strong>
+  <p><small>Select Ralationships json File</small><input type="file" id="relationsFile" accept="application/json"></p>  
+  <p><small>Select Aliases json File</small><input type="file" id="aliasFile" accept="application/json"></p>
+</div>
 
 <div class="card">
-  <div class="header">
-    <img class="logo" src="image.png" alt="logo">
-    <div>
-      <h1>SQL Server SELECT Builder — BIGTELLIGENT</h1>
-      <p class="lead">Carga tu diccionario de alias y las relaciones; ingresa la tabla principal y los alias solicitados. El generador arma SELECT + FROM + JOIN automáticamente.</p>
-    </div>
-  </div>
+  <strong>2) Paste alias to include (one per line, exactly as it appears on the ticket)</strong>
+  <textarea id="aliasList" placeholder="Example: Policy Number
+Postal Code
+INSURED_NAME"></textarea>
+  <button id="generate">Generate Query</button>
+  <button id="copyBtn" style="padding:10px 12px;border-radius:8px;border:0;background:#06818a;color:#fff;cursor:pointer">Copy Query</button>
 
-  <div class="grid">
-    <div class="panel">
-      <label for="aliasesFile">1) Cargar aliases.json (array de alias)</label>
-      <input id="aliasesFile" type="file" accept=".json" />
-      <div style="height:10px"></div>
+</div>
 
-      <label for="relationshipsFile">2) Cargar relationships.json (array de relaciones)</label>
-      <input id="relationshipsFile" type="file" accept=".json" />
-      <div style="height:10px"></div>
-
-      <label for="mainTable">3) Tabla principal (opcional)</label>
-      <input id="mainTable" type="text" placeholder="pc_policyperiod" />
-
-      <div style="height:10px"></div>
-      <label for="aliasesArea">4) Aliases requeridos (uno por línea)</label>
-      <textarea id="aliasesArea" placeholder="State&#10;Policy Number&#10;INSURED_NAME"></textarea>
-
-      <div class="controls" style="margin-top:12px">
-        <button id="btnGenerate" class="primary">Generate Query</button>
-        <button id="btnCopy">Copy</button>
-        <button id="btnDownload" class="ghost">Download .sql</button>
-      </div>
-
-      <div class="footer" style="margin-top:12px">
-        <div class="badge" id="aliasCount">Aliases: 0</div>
-        <div class="badge" id="relCount">Relations: 0</div>
-        <div id="status" class="small"></div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <label>Output SQL</label>
-      <div id="output" class="output">Aquí aparecerá la query generada</div>
-
-      <div style="height:12px"></div>
-      <label>Debug / Summary</label>
-      <div id="debug" class="output small">Logs y paths detectados</div>
-    </div>
-  </div>
+<div class="card">
+  <strong>Result (query)</strong>
+  <pre id="output">The query will appear here...</pre>
+  <details>
+    <summary>Debug: tables detected / joins calculated</summary>
+    <pre id="debug"></pre>
+  </details>
 </div>
 
 <script>
-/* -------------------------
-   Estructuras en memoria
-   ------------------------- */
-let aliasDictionary = {}; // mapa: alias -> { alias, table, field }
-let aliasesArray = [];    // original array
-let outgoing = {}; // from -> [{to,on}]
-let incoming = {}; // to -> [{from,on}]
-let relationshipsArray = []; // raw array
+let relationsRaw = null;
+let aliasArray = null;
 
-/* -------------------------
-   Util: safe trim & normalize
-   ------------------------- */
-function norm(s){ return String(s||'').trim(); }
+function sanitizeTableName(t) {
+  if (!t) return t;
+  // Dejar solo letras, números y guión bajo para evitar cualquier carácter problemático
+  const cleaned = String(t).replace(/[^A-Za-z0-9_]/g, "");
+  // Si quedó vacío (p. ej. el nombre solo tenía caracteres inválidos), devolvemos el original
+  return cleaned || String(t);
+}
 
-/* -------------------------
-   Cargar aliases.json (array -> map)
-   ------------------------- */
-document.getElementById('aliasesFile').addEventListener('change', async (ev)=>{
-  const f = ev.target.files[0];
-  if(!f){ alert('No file'); return; }
-  try{
-    const text = await f.text();
-    const arr = JSON.parse(text);
-    aliasesArray = arr;
-    aliasDictionary = {};
-    arr.forEach(item=>{
-      const key = norm(item.alias);
-      aliasDictionary[key] = { alias: key, table: norm(item.table), field: norm(item.field) };
-    });
-    document.getElementById('aliasCount').textContent = `Aliases: ${Object.keys(aliasDictionary).length}`;
-    setStatus('Alias dictionary loaded.');
-  }catch(err){
-    alert('Error parsing aliases JSON: ' + err.message);
-  }
-});
-
-/* -------------------------
-   Cargar relationships.json (array) -> outgoing/incoming maps
-   ------------------------- */
-document.getElementById('relationshipsFile').addEventListener('change', async (ev)=>{
-  const f = ev.target.files[0];
-  if(!f){ alert('No file'); return; }
-  try{
-    const text = await f.text();
-    const arr = JSON.parse(text);
-    relationshipsArray = arr;
-    buildRelationMapsFromArray(arr);
-    document.getElementById('relCount').textContent = `Relations: ${arr.length}`;
-    setStatus('Relationships loaded.');
-  }catch(err){
-    alert('Error parsing relationships JSON: ' + err.message);
-  }
-});
-
-function buildRelationMapsFromArray(arr){
-  outgoing = {};
-  incoming = {};
-  arr.forEach(rel=>{
-    const from = norm(rel.from);
-    const to = norm(rel.to);
-    const on = norm(rel.on);
-
-    if(!outgoing[from]) outgoing[from] = [];
-    outgoing[from].push({ to, on });
-
-    if(!incoming[to]) incoming[to] = [];
-    incoming[to].push({ from, on });
+// Parse the relations file format (expects objects {from,to,on})
+function parseRelations(arr){
+  return arr.map(r => {
+    // r.on like "pc_account.ID=pc_address.Account"
+    const on = (r.on || r.On || r.ON || '').trim();
+    const parts = on.split('=');
+    const left = parts[0] ? parts[0].trim() : null;
+    const right = parts[1] ? parts[1].trim() : null;
+    // attempt to extract table and column
+    function splitFull(f){
+      if(!f) return {table:null,column:null,raw:null};
+      const idx = f.lastIndexOf('.');
+      if(idx>0) return {table: f.slice(0,idx), column: f.slice(idx+1), raw: f};
+      return {table: null, column: f, raw: f};
+    }
+    const L = splitFull(left);
+    const R = splitFull(right);
+    return {from: r.from, to: r.to, onRaw: on, leftTable: L.table, leftCol: L.column, rightTable: R.table, rightCol: R.column};
   });
-  // also expose outgoing for older code
-  // relationships = outgoing;
 }
 
-/* -------------------------
-   Generar alias de tabla (pp, pl, a, etc) de forma determinista
-   ------------------------- */
-function makeTableAlias(tableName, existingAliases){
-  // produce a short alias from tableName, e.g. pc_policyperiod -> pp
-  const parts = tableName.split(/[_\.]/).filter(Boolean);
-  let base = '';
-  if(parts.length === 1){
-    base = parts[0].slice(0,2);
-  } else {
-    // take first letter of up to 3 parts
-    base = parts.map(p=>p[0]).slice(0,3).join('');
-  }
-  base = base.toLowerCase().replace(/[^a-z0-9]/g,'') || tableName.slice(0,2).toLowerCase();
-
-  let alias = base;
-  let i = 1;
-  while(existingAliases.has(alias)){
-    alias = base + i;
-    i++;
-  }
-  existingAliases.add(alias);
-  return alias;
+function buildGraph(rels){
+  const graph = {};
+  rels.forEach(r => {
+    if(!graph[r.from]) graph[r.from]=[];
+    if(!graph[r.to]) graph[r.to]=[];
+    graph[r.from].push({to: r.to, onRaw: r.onRaw, leftTable: r.leftTable, leftCol: r.leftCol, rightTable: r.rightTable, rightCol: r.rightCol, from: r.from});
+    graph[r.to].push({to: r.from, onRaw: r.onRaw, leftTable: r.leftTable, leftCol: r.leftCol, rightTable: r.rightTable, rightCol: r.rightCol, from: r.from});
+  });
+  return graph;
 }
 
-/* -------------------------
-   Reemplazar nombres de tablas dentro de la condición ON por alias
-   (usa boundaries para evitar reemplazos parciales)
-   ------------------------- */
-function replaceTablesInOn(onCondition, tableAliasMap){
-  // tableAliasMap: { tableName: alias, ... }
-  // queremos reemplazar todas las apariciones de tableName + '.' por alias + '.'
-  let out = onCondition;
-  // sort by length descending to replace longer names first
-  const tables = Object.keys(tableAliasMap).sort((a,b)=>b.length - a.length);
-  for(const t of tables){
-    const alias = tableAliasMap[t];
-    // regex: \btableName\b\.
-    // But table names can contain dots; we use lookahead for dot or whitespace or parenthesis
-    const esc = t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-    const re = new RegExp(`\\b${esc}\\b(?=\\.)`, 'g');
-    out = out.replace(re, alias);
-  }
-  return out;
-}
-
-/* -------------------------
-   BFS bidireccional (simple BFS) que devuelve path de edges {from,to,on}
-   ------------------------- */
-function findPathBFS(start, target){
-  start = norm(start);
-  target = norm(target);
-  if(start === target) return []; // nada que unir
-
-  // queue and parent maps
-  const queue = [start];
-  const parent = {}; // table -> { parentTable, edge: {from,to,on} }
-  parent[start] = null;
-
+// BFS path (returns array of table names path)
+function findPath(graph, start, end){
+  if(start===end) return [start];
+  const queue = [[start]];
+  const visited = new Set([start]);
   while(queue.length){
-    const cur = queue.shift();
-    // explore outgoing edges cur -> neigh
-    const outs = outgoing[cur] || [];
-    for(const r of outs){
-      const neigh = r.to;
-      if(parent.hasOwnProperty(neigh)) continue;
-      parent[neigh] = { parent: cur, edge: { from: cur, to: neigh, on: r.on } };
-      if(neigh === target) return buildEdgePath(parent, target);
-      queue.push(neigh);
-    }
-    // explore incoming edges neigh -> cur (neigh is from)
-    const ins = incoming[cur] || [];
-    for(const r of ins){
-      const neigh = r.from;
-      if(parent.hasOwnProperty(neigh)) continue;
-      parent[neigh] = { parent: cur, edge: { from: neigh, to: cur, on: r.on } };
-      if(neigh === target) return buildEdgePath(parent, target);
-      queue.push(neigh);
+    const path = queue.shift();
+    const node = path[path.length-1];
+    const edges = graph[node] || [];
+    for(const e of edges){
+      if(visited.has(e.to)) continue;
+      visited.add(e.to);
+      const newPath = path.concat([e.to]);
+      if(e.to === end) return newPath;
+      queue.push(newPath);
     }
   }
-  return null; // no path
+  return null;
 }
 
-function buildEdgePath(parentMap, target){
-  const edges = [];
-  let cur = target;
-  while(parentMap[cur] && parentMap[cur].parent !== null){
-    const info = parentMap[cur];
-    edges.push(info.edge);
-    cur = info.parent;
-  }
-  // edges are from target->start order, invert
-  return edges.reverse();
-}
-
-/* -------------------------
-   Construir JOINs para un conjunto de tablas requeridas
-   Devuelve { ok, sql, edgesUsed, tableAliasMap }
-   ------------------------- */
-function buildJoinChain(mainTable, tablesNeeded){
-  const main = norm(mainTable);
-  const tables = Array.from(new Set(tablesNeeded.map(norm)));
-  // ensure main is present
-  if(!tables.includes(main)) tables.unshift(main);
-
-  const joinsOrdered = []; // edges
-  const added = new Set(); // keys from->to to avoid duplicates
-
-  // find path to each table from main
-  for(const t of tables){
-    if(t === main) continue;
-    // if already covered by built joins, skip
-    if(isTableCovered(main, joinsOrdered, t)) continue;
-    const path = findPathBFS(main, t);
-    if(!path) return { ok:false, error:`Could not find path from ${main} to ${t}` };
-    for(const edge of path){
-      const k1 = `${edge.from}->${edge.to}`;
-      const k2 = `${edge.to}->${edge.from}`;
-      if(added.has(k1) || added.has(k2)) continue;
-      joinsOrdered.push(edge);
-      added.add(k1);
+// For a path like [A,B,C] build join clauses using the relation 'onRaw' where possible
+function joinsForPath(path, rels){
+  const joins = [];
+  const usedPairs = new Set();
+  for(let i=0;i<path.length-1;i++){
+    const a = path[i];
+    const b = path[i+1];
+    // find any relation object that connects a and b
+    const rel = rels.find(r => (r.from===a && r.to===b) || (r.from===b && r.to===a));
+    if(!rel){
+      // no direct relation — skip (shouldn't happen if path comes from graph)
+      continue;
     }
+    // avoid duplicates
+    const key = [a,b].sort().join('__');
+    if(usedPairs.has(key)) continue;
+    usedPairs.add(key);
+    // Use the raw ON expression directly (it already contains fully-qualified table.column)
+    // But ensure we join the "to" side table (b). We'll use LEFT JOIN to be safe.
+    joins.push({joinTable: b, on: rel.onRaw, rawRel: rel});
   }
-
-  // Now we have edges; produce table alias map
-  const tableAliasMap = {};
-  const existingAliases = new Set();
-  // include main first
-  tableAliasMap[main] = makeTableAlias(main, existingAliases);
-
-  // create aliases for all tables that appear in edges
-  for(const e of joinsOrdered){
-    if(!tableAliasMap[e.from]) tableAliasMap[e.from] = makeTableAlias(e.from, existingAliases);
-    if(!tableAliasMap[e.to]) tableAliasMap[e.to] = makeTableAlias(e.to, existingAliases);
-  }
-
-  // Build SQL join lines in order, ensuring connecting table exists
-  const included = new Set([main]);
-  let sql = '';
-
-  // we may need to iterate until all joins are placed in order
-  let pending = joinsOrdered.slice();
-  let safety = 0;
-  while(pending.length && safety < 1000){
-    safety++;
-    let progress = false;
-    for(let i = 0; i < pending.length; i++){
-      const e = pending[i];
-      const fromIncluded = included.has(e.from);
-      const toIncluded = included.has(e.to);
-
-      if(fromIncluded && !toIncluded){
-        // join to
-        const onWithAliases = replaceTablesInOn(e.on, tableAliasMap);
-        sql += `JOIN ${e.to} ${tableAliasMap[e.to]} ON ${onWithAliases}\n`;
-        included.add(e.to); progress = true;
-        pending.splice(i,1); i--;
-        continue;
-      }
-
-      if(toIncluded && !fromIncluded){
-        // join from
-        const onWithAliases = replaceTablesInOn(e.on, tableAliasMap);
-        sql += `JOIN ${e.from} ${tableAliasMap[e.from]} ON ${onWithAliases}\n`;
-        included.add(e.from); progress = true;
-        pending.splice(i,1); i--;
-        continue;
-      }
-
-      // if both included or none included, skip for now
-    }
-    if(!progress) break;
-  }
-
-  // final check: all required tables included?
-  for(const t of tables){
-    if(!included.has(t)) return { ok:false, error:`Could not resolve all joins; missing table ${t}` };
-  }
-
-  return { ok:true, sql, edges: joinsOrdered, tableAliasMap };
+  return joins;
 }
 
-function isTableCovered(main, joinsOrdered, target){
-  if(target === main) return true;
-  const covered = new Set([main]);
-  for(const e of joinsOrdered){
-    if(covered.has(e.from)) covered.add(e.to);
-    if(covered.has(e.to)) covered.add(e.from);
+function buildSelectField(table, field, alias){
+  // sanitize table name from alias JSON (handles weird values like "pc_job (Renewal)")
+  const t = sanitizeTableName(table);
+  if(!field) return `${t}.* AS [${alias}]`;
+
+  // if field contains '+', treat as concatenation expression
+  if(field.includes('+')){
+    // split by + and wrap each token as table.col
+    const parts = field.split('+').map(p=>p.trim());
+    const mapped = parts.map(p => {
+      // if p contains a space or parentheses, just leave it
+      const col = p.match(/[A-Za-z0-9_]+/);
+      if(col) return `${t}.${col[0]}`;
+      return p;
+    });
+    return `${mapped.join(" + ")} AS [${alias}]`;
   }
-  return covered.has(target);
+
+  // simple column name or expression
+  // if field already contains a dot, assume fully qualified
+  if(field.includes('.')) return `${field} AS [${alias}]`;
+  // else prefix with table
+  return `${t}.${field} AS [${alias}]`;
 }
 
-/* -------------------------
-   Generar Query principal
-   ------------------------- */
-document.getElementById('btnGenerate').addEventListener('click', ()=> {
-  const aliasesText = document.getElementById('aliasesArea').value.trim();
-  const outputDiv = document.getElementById('output');
-  const debugDiv = document.getElementById('debug');
-  outputDiv.textContent = '';
-  debugDiv.textContent = '';
-
-  if(!aliasesText) { outputDiv.textContent = 'Error: no aliases provided'; return; }
-  const aliasLines = aliasesText.split(/\r?\n/).map(s=>norm(s)).filter(Boolean);
-
-  // resolve each alias
-  const resolved = [];
-  const missing = [];
-  for(const a of aliasLines){
-    if(aliasDictionary[a]) resolved.push({ alias: a, table: aliasDictionary[a].table, field: aliasDictionary[a].field });
-    else missing.push(a);
-  }
-  if(missing.length){
-    outputDiv.textContent = `Error: alias(es) not found in dictionary: ${missing.join(', ')}`;
+function generateQuery(){
+  if(!relationsRaw || !aliasArray){
+    alert('Cargá ambos archivos: relaciones y alias');
     return;
   }
 
-  // main table
-  let main = norm(document.getElementById('mainTable').value) || resolved[0].table;
-  if(!main){ outputDiv.textContent = 'Error: cannot determine main table'; return; }
+  const relsParsed = parseRelations(relationsRaw);
+  const graph = buildGraph(relsParsed.map(r=>({from:r.from,to:r.to,onRaw:r.onRaw,leftTable:r.leftTable,leftCol:r.leftCol,rightTable:r.rightTable,rightCol:r.rightCol})));
 
-  // collect required tables
-  const requiredTables = new Set([main]);
-  for(const r of resolved) requiredTables.add(r.table);
+  const aliases = document
+  .getElementById('aliasList')
+  .value
+  .split(/\r?\n/)
+  .map(s => s.trim())
+  .filter(Boolean);
 
-  // build join chain
-  const joinResult = buildJoinChain(main, Array.from(requiredTables));
-  if(!joinResult.ok){
-    outputDiv.textContent = `Error building joins: ${joinResult.error}`;
-    // provide debug clues: which tables needed and outgoing map
-    debugDiv.textContent = `Needed tables: ${Array.from(requiredTables).join(', ')}\n\nOutgoing keys: ${Object.keys(outgoing).join(', ')}\n\nIncoming keys: ${Object.keys(incoming).join(', ')}`;
-    return;
-  }
+  const copyBtn = document.getElementById('copyBtn');
+  copyBtn.addEventListener('click', () => {
+  const text = document.getElementById('output').textContent;
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      copyBtn.textContent = '¡Copied!';
+      setTimeout(()=> copyBtn.textContent = 'Copy Query', 1500);
+    })
+    .catch(err => alert('Error al copiar: ' + err));
+});
 
-  // now build SELECT using table aliases
-  const tableAliasMap = joinResult.tableAliasMap;
-  // ensure main alias exists
-  if(!tableAliasMap[main]) tableAliasMap[main] = makeTableAlias(main, new Set(Object.values(tableAliasMap)));
 
-  const selectLines = resolved.map(r => {
-    const tblAlias = tableAliasMap[r.table] || r.table;
-    return `  ${tblAlias}.${r.field} AS [${r.alias}]`;
+  if(aliases.length===0){ alert('Pegá los alias a incluir'); return; }
+
+  // build map alias -> {table, field}
+  const aliasMap = {};
+  aliasArray.forEach(a => { aliasMap[a.alias] = {table: a.table, field: a.field}; });
+
+  const fieldsInfo = [];
+  const tablesNeeded = new Set();
+  aliases.forEach(al => {
+    const info = aliasMap[al];
+    if(!info){
+      console.warn('Alias no encontrado en el JSON:', al);
+      return;
+    }
+    const sanitizedTable = sanitizeTableName(info.table);
+    fieldsInfo.push({alias: al, table: sanitizedTable, field: info.field});
+    tablesNeeded.add(sanitizedTable);
   });
 
-  // build FROM line with alias
-  const fromLine = `FROM ${main} ${tableAliasMap[main]}\n`;
+  const tables = Array.from(tablesNeeded);
+  if(tables.length===0){ alert('No se encontraron alias válidos'); return; }
 
-  // join SQL replace table names by aliases inside ON (already done in buildJoinChain)
-  const joinSQL = joinResult.sql;
+  // pick a base table heuristically: the one that appears most often in relations or the first requested
+  function degree(t){
+    return (graph[t]||[]).length;
+  }
+  tables.sort((a,b)=> degree(b)-degree(a));
+  const base = tables[0];
 
-  const fullSQL = `SELECT\n${selectLines.join(',\n')}\n${fromLine}${joinSQL}`.trim() + '\n';
+  // compute joins by finding path from base to each other table
+  const allJoins = [];
+  const joinKeys = new Set();
+  const errors = [];
+  for(let i=1;i<tables.length;i++){
+    const target = tables[i];
+    const path = findPath(graph, base, target);
+    if(!path){ errors.push(`No path from ${base} to ${target}`); continue; }
+    const joins = joinsForPath(path, relsParsed.map(r=>({from:r.from,to:r.to,onRaw:r.onRaw,leftTable:r.leftTable,leftCol:r.leftCol,rightTable:r.rightTable,rightCol:r.rightCol})))
+    joins.forEach(j => {
+      const key = `${j.joinTable}::${j.on}`;
+      if(!joinKeys.has(key)){
+        joinKeys.add(key);
+        allJoins.push(j);
+      }
+    });
+  }
 
-  outputDiv.textContent = fullSQL;
+  // build SELECT clause
+  const selectParts = fieldsInfo.map(f => buildSelectField(f.table, f.field, f.alias));
 
-  // debug: show edges used and alias map
+  // build FROM + JOIN SQL text
+  const joinSqlLines = allJoins.map(j => `LEFT JOIN ${j.joinTable} ON ${j.on}\n  `);
+  // formato con tabulado bonito
+  const sql = `SELECT
+    ${selectParts.join(',   \n    ')}
+  FROM ${base}
+  ${joinSqlLines.map(j => '  ' + j).join('')}${errors.length ? '  -- ERRORES: \n    -- ' + errors.join('\n    -- ') : ''}`; `SELECT
+  ${selectParts.join(', \n ')}FROM ${base}${joinSqlLines.join('')}${errors.length? '-- ERRORES:-- '+errors.join('-- '): ''}`;
+
+  document.getElementById('output').textContent = sql;
+
+  // debug info
   const dbg = [];
-  dbg.push('Table aliases:');
-  for(const t of Object.keys(tableAliasMap)) dbg.push(`  ${t} => ${tableAliasMap[t]}`);
-  dbg.push('\nEdges used (in order):');
-  (joinResult.edges || []).forEach(e => dbg.push(`  ${e.from} -> ${e.to}  ON: ${e.on}`));
-  debugDiv.textContent = dbg.join('\n');
+  dbg.push('Tablas detectadas: '+tables.join(', '));
+  dbg.push('\nBase elegida: '+base);
+  dbg.push('\nJoins generados:');
+  allJoins.forEach(j=> dbg.push(` \n JOIN ${j.joinTable} ON ${j.on}`));
+  if(errors.length) dbg.push('\n\nErrores encontrados:\n'+errors.join('\n'));
+  document.getElementById('debug').textContent = dbg.join('');
+}
+
+// file inputs
+document.getElementById('relationsFile').addEventListener('change', async e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  try{
+    relationsRaw = JSON.parse(await f.text());
+    console.log('relaciones cargadas', relationsRaw.length);
+  }catch(err){ alert('Error leyendo JSON de relaciones: '+err.message); }
 });
 
-/* -------------------------
-   Copy / Download
-   ------------------------- */
-document.getElementById('btnCopy').addEventListener('click', ()=>{
-  const txt = document.getElementById('output').textContent;
-  if(!txt) { alert('No SQL to copy'); return; }
-  navigator.clipboard.writeText(txt).then(()=> alert('Copied to clipboard'));
+document.getElementById('aliasFile').addEventListener('change', async e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  try{
+    aliasArray = JSON.parse(await f.text());
+    console.log('alias cargados', aliasArray.length);
+  }catch(err){ alert('Error leyendo JSON de alias: '+err.message); }
 });
 
-document.getElementById('btnDownload').addEventListener('click', ()=>{
-  const txt = document.getElementById('output').textContent;
-  if(!txt) { alert('No SQL to download'); return; }
-  const blob = new Blob([txt], { type: 'text/sql' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'query.sql';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-});
-
-/* -------------------------
-   small helpers
-   ------------------------- */
-function setStatus(msg){ document.getElementById('status').textContent = msg; }
-
+document.getElementById('generate').addEventListener('click', generateQuery);
 </script>
+
 </body>
 </html>
