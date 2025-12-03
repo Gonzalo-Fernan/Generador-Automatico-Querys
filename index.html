@@ -15,6 +15,7 @@
   button{padding:10px 12px;border-radius:8px;border:0;background:#0b74de;color:#fff;cursor:pointer}
   small{color:#666}
   .articleConteiner{display:grid;grid-template-columns:1fr 1fr;}
+  .buttonConteiner{display:flex;gap:12px;margin-top:10px;}
 </style>
 </head>
 <body>
@@ -35,8 +36,11 @@
         <textarea style="width: 50%;" id="aliasList" placeholder="Example: Policy Number
          Postal Code
          INSURED_NAME"></textarea>
-        <button id="generate">Generate Query</button>
-        <button id="copyBtn" style="padding:10px 12px;border-radius:8px;border:0;background:#06818a;color:#fff;cursor:pointer">Copy Query</button>
+         <div class="buttonConteiner">
+           <button id="generate">Generate Query</button>
+           <button id="copyBtn" style="padding:10px 12px;border-radius:8px;border:0;background:#06818a;color:#fff;cursor:pointer">Copy Query</button>
+
+         </div>
       </div>
   </article>
   <article>
